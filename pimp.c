@@ -8,24 +8,29 @@ SDL_Texture *tex = NULL;
 
 //Watch face is 6 x 12 pixels
 //Pixel is 5x5 + 1 block spacing
+#define pxsize 5
 #define scale 3
 #define spacing 1
-int width = (6 * 5 * scale) + (7 * spacing * scale);
-int height = (12 * 5 * scale) + (13 * spacing * scale);
+
+int width = (6 * pxsize * scale) + (7 * spacing * scale);
+int height = (12 * pxsize * scale) + (13 * spacing * scale);
+
 SDL_Event event;
 SDL_Rect block;
-
-int hours, minutes, seconds, month, day;
-int mode = 0;
-int offsety, offsetx = 0;
-
-SDL_TimerID timer;
 
 enum modes
 {
     MODE_TIME,
     MODE_DATE
 };
+
+int hours, minutes, seconds, month, day;
+int mode = MODE_TIME;
+int offsety, offsetx = 0;
+int print_seconds = 0;
+
+SDL_TimerID timer;
+
 
 Uint32 set_mode_time (Uint32 interval, void *param)
 {
@@ -86,10 +91,10 @@ void draw_hours (int hour)
 {
     int i;
     //Set up initial block position for hours
-    block.w = 5 * scale;
-    block.h = 5 * scale;
+    block.w = pxsize * scale;
+    block.h = pxsize * scale;
     block.x = spacing * scale;
-    block.y = height - (5 * scale);
+    block.y = height - (pxsize * scale);
    
     block.x += offsetx;
     block.y += offsety;
@@ -112,6 +117,9 @@ void draw_minutes (int mins)
     else if (mins <= 0)
         return;
 
+    block.w = pxsize * scale;
+    block.h = pxsize * scale;
+    
     //Draw minutes
     rows = mins / 5;
     remainder = mins % 5;
@@ -148,6 +156,55 @@ void draw_minutes (int mins)
     }
 }
 
+void draw_seconds (int secs)
+{
+    int i, j, rows, remainder, w, h;
+
+    if (secs > 60)
+        secs = 60;
+    else if (secs <= 0)
+        return;
+
+    w = block.w;
+    h = block.h;
+    block.w = (pxsize * scale) / 2;
+    block.h = (pxsize * scale) / 2;
+    
+    rows = secs / 5;
+    remainder = secs % 5;
+   
+    block.x = (spacing * scale) + w;
+    block.y = height - h;
+    block.y -= spacing * scale;
+    
+    block.x += offsetx;
+    block.y += offsety;
+    //Draw the complete rows
+    for (i = 0; i < rows; i++)
+    {
+        for (j = 0; j < 5; j++)
+        {
+            block.x += spacing * scale;
+            SDL_RenderFillRect( ren, &block );
+            block.x += w;
+        }
+        block.x = (spacing * scale) + w;
+        block.x += offsetx;
+        block.y -= spacing * scale;
+        block.y -= h;
+    }
+
+    //Draw the remainder
+    block.x = (spacing * scale) + w;
+    block.x += offsetx;
+    for (i = 0; i < remainder; i++)
+    {
+        block.x += spacing * scale;
+        SDL_RenderFillRect( ren, &block );
+        block.x += w;
+    }
+}
+
 void draw_unlit (void)
 {
     int i, j;
@@ -167,22 +224,56 @@ void draw_date (void)
     SDL_SetRenderDrawColor(ren, 0, 0, 255, 0);
     draw_hours (month);
     draw_minutes (day);
+
 }
 
 void draw_time (void)
 {
     draw_unlit ();
     SDL_SetRenderDrawColor(ren, 0, 0, 255, 0);
-
     draw_hours (hours);
     draw_minutes (minutes);
+    
+    if (print_seconds)
+    {
+        SDL_SetRenderDrawColor(ren, 0, 0, 100, 0);
+        draw_seconds (seconds);
+    }
+}
+
+void print_help (void)
+{
+    fprintf (stdout, "Pimp time\n");
+    fprintf (stdout, "-h        print this help\n");
+    fprintf (stdout, "-c        centre on screen\n");
+    fprintf (stdout, "-s        show seconds\n");
 }
 
 int main( int argc, char* argv[] )
 {
     SDL_DisplayMode current;
-
     int running = 0;
+    int c;
+    int centre_on_screen = 0;
+
+    while ((c = getopt (argc, argv, "hcs")) != -1)
+    {
+        switch (c)
+        {
+            case 'h':
+            default:
+                print_help ();
+                return;
+                break;
+            case 'c':
+                centre_on_screen = 1;
+                break;
+            case 's':
+                print_seconds = 1;
+                break;
+        }
+    }
+
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
         fprintf (stdout, "Error initialising SDL video: %s\n", SDL_GetError());
@@ -197,8 +288,16 @@ int main( int argc, char* argv[] )
     win = SDL_CreateWindow("Pimp time", (current.w / 2) - (width / 2), (current.h / 2) - (height / 2),
                            width, height, SDL_WINDOW_SHOWN);
     
-    offsetx = (current.w / 2) - (width / 2);
-    offsety = (current.h / 2) - (height / 2);
+    if (centre_on_screen)
+    {
+        offsetx = (current.w / 2) - (width / 2);
+        offsety = (current.h / 2) - (height / 2);
+    }
+    else
+    {
+        offsetx = 0;
+        offsety = 0;
+    }
 
     if (win == NULL)
     {
