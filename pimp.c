@@ -50,6 +50,14 @@ void toggle_mode (void)
         mode = MODE_TIME;
 }
 
+void toggle_seconds (void)
+{
+    if (print_seconds == 0)
+        print_seconds = 1;
+    else
+        print_seconds = 0;
+}
+
 int poll_event (void)
 {
     SDL_PollEvent (&event);
@@ -62,6 +70,9 @@ int poll_event (void)
         {
             case SDLK_SPACE:
                 toggle_mode ();
+                break;
+            case SDLK_s:
+                toggle_seconds ();
                 break;
         }
     }
