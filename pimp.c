@@ -82,33 +82,6 @@ void get_time (void)
         hours -= 12;
 }
 
-void draw_unlit (void)
-{
-    int i, j;
-    //Set background colour to black
-    SDL_SetRenderDrawColor(ren, 0, 0, 0, 0);
-    SDL_RenderClear (ren);
-
-    //Draw unlit blocks
-    SDL_SetRenderDrawColor(ren, 0, 0, 50, 0);
-    block.y = spacing * scale;
-
-    block.y += offsety;
-
-    for (i = 0; i < 12; i++)
-    {
-        block.x = offsetx;
-        for (j = 0; j < 6; j++)
-        {
-            block.x += spacing * scale;
-            SDL_RenderFillRect( ren, &block );
-            block.x += block.w;
-        }
-        block.y += spacing * scale;
-        block.y += block.h;
-    }
-}
-
 void draw_hours (int hour)
 {
     int i;
@@ -133,6 +106,12 @@ void draw_hours (int hour)
 void draw_minutes (int mins)
 {
     int i, j, rows, remainder;
+
+    if (mins > 60)
+        mins = 60;
+    else if (mins <= 0)
+        return;
+
     //Draw minutes
     rows = mins / 5;
     remainder = mins % 5;
@@ -167,6 +146,19 @@ void draw_minutes (int mins)
         SDL_RenderFillRect( ren, &block );
         block.x += block.w;
     }
+}
+
+void draw_unlit (void)
+{
+    int i, j;
+    //Set background colour to black
+    SDL_SetRenderDrawColor(ren, 0, 0, 0, 0);
+    SDL_RenderClear (ren);
+
+    //Draw unlit blocks
+    SDL_SetRenderDrawColor(ren, 0, 0, 50, 0);
+    draw_hours (12);
+    draw_minutes (60);
 }
 
 void draw_date (void)
