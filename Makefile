@@ -8,7 +8,7 @@ OBJS = pimp.c
 
 pimp: $(OBJS)
 	@echo [link]
-	@$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+	@$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS) $(LDLIBS)
 
 clean:
 	@echo "[Removing object files]"

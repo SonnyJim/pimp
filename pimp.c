@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <time.h>
+#include <unistd.h>
 
 SDL_Window *win = NULL;
 SDL_Renderer *ren = NULL;
@@ -35,6 +36,7 @@ SDL_TimerID timer;
 Uint32 set_mode_time (Uint32 interval, void *param)
 {
     mode = MODE_TIME;
+    return 0;
 }
 
 void toggle_mode (void)
@@ -218,7 +220,6 @@ void draw_seconds (int secs)
 
 void draw_unlit (void)
 {
-    int i, j;
     //Set background colour to black
     SDL_SetRenderDrawColor(ren, 0, 0, 0, 0);
     SDL_RenderClear (ren);
@@ -274,7 +275,7 @@ int main( int argc, char* argv[] )
             case 'h':
             default:
                 print_help ();
-                return;
+                return 0;
                 break;
             case 'c':
                 centre_on_screen = 1;
@@ -342,4 +343,5 @@ int main( int argc, char* argv[] )
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
     SDL_Quit();
+    return 0;
 }
