@@ -5,7 +5,6 @@
 
 SDL_Window *win = NULL;
 SDL_Renderer *ren = NULL;
-SDL_Texture *tex = NULL;
 
 //Watch face is 6 x 12 pixels
 //Pixel is 5x5 + 1 block spacing
@@ -339,7 +338,6 @@ int main( int argc, char* argv[] )
     }
 
     //Clean up
-    SDL_DestroyTexture(tex);
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
     SDL_Quit();
